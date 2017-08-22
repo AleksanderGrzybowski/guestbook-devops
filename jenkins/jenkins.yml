@@ -27,14 +27,6 @@
         - jenkins
         - ansible
         
-        
-    - name: Restart Jenkins
-      become: yes        
-      become_user: root
-      service:
-        name: jenkins
-        state: restarted
-        
     - name: Wait for Jenkins to start
       pause:
         seconds: 30
@@ -106,3 +98,18 @@
       become_user: jenkins
       command: curl -s -XPOST 'http://localhost:8080/createItem?name=seed' --data-binary @/var/lib/jenkins/seed-job.xml -H "Content-Type:text/xml"
 
+    - name: Restart Jenkins # not sure why needed
+      become: yes        
+      become_user: root
+      service:
+        name: jenkins
+        state: restarted
+        
+    - name: Wait for Jenkins to restart
+      pause:
+        seconds: 30
+
+    - name: Trigger seed job
+      become: yes
+      become_user: jenkins
+      command: curl -X POST http://localhost:8080/job/seed/build
