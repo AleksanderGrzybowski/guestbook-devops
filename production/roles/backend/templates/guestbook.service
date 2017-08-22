@@ -1,0 +1,14 @@
+[Unit]
+Description=Guestbook Backend App
+After=syslog.target
+
+[Service]
+User=guestbook
+ExecStart=/usr/bin/java -jar /home/guestbook/app.jar
+SuccessExitStatus=143
+Environment=SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/guestbook-prod
+Environment=SPRING_DATASOURCE_USERNAME=guestbook
+Environment=SPRING_DATASOURCE_PASSWORD=guestbook
+
+[Install]
+WantedBy=multi-user.target

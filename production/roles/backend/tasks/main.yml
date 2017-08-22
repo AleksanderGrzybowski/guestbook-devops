@@ -1,0 +1,45 @@
+- name: Install Java 8 and MySQL
+  become: yes
+  become_user: root
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - openjdk-8-jre
+    - mysql-server
+    - python-mysqldb
+    
+- name: Add guestbook mysql user
+  become: yes
+  become_user: root
+  mysql_user:
+    name: guestbook
+    password: guestbook
+    priv: '*.*:ALL'
+    state: present
+    
+- name: Add guestbook database
+  become: yes
+  become_user: root
+  mysql_db:
+    name: guestbook-prod
+    state: present
+    
+- name: Copy systemd service definition file
+  become: yes
+  become_user: root
+  template:
+    src: guestbook.service
+    dest: /etc/systemd/system/
+    
+- name: Reload systemd configuration
+  become: yes
+  become_user: root
+  command: systemctl daemon-reload
+
+- name: Enable backend service
+  become: yes
+  become_user: root
+  service:
+    name: guestbook
+    enabled: true

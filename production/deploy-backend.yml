@@ -1,0 +1,18 @@
+- hosts: vagrant-production
+  tasks:
+    - name: Upload .jar
+      become: yes
+      become_user: guestbook
+      copy:
+        src: app.jar
+        dest: /home/guestbook/app.jar
+    
+    - name: Restart backend service
+      become: yes
+      become_user: root
+      service:
+        name: guestbook
+        state: restarted
+      
+      
+    
