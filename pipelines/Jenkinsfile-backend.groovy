@@ -1,3 +1,6 @@
+String GITHUB_URL = 'https://github.com/AleksanderGrzybowski'
+int DB_PASSWORD_LENGTH = 10
+
 stage('Clean up') {
     node {
         deleteDir()
@@ -9,12 +12,12 @@ stage('Clone repositories') {
         sh 'mkdir guestbook-backend guestbook-devops'
         
         dir('guestbook-backend') {
-            git(url: 'https://github.com/AleksanderGrzybowski/guestbook-backend.git', poll: true)
+            git(url: "${GITHUB_URL}/guestbook-backend.git", poll: true)
         }
         
         dir('guestbook-devops') {
-            git(url: 'https://github.com/AleksanderGrzybowski/guestbook-devops.git')
-            sh "chmod 600 private_key"
+            git(url: "${GITHUB_URL}/guestbook-devops.git")
+            sh 'chmod 600 private_key'
         }
     }
 }
@@ -23,7 +26,7 @@ String dbPassword = null
 
 stage('Resetup database for integration tests') {
     node {
-        dbPassword = sh(script: 'pwgen 10 1', returnStdout: true).trim()
+        dbPassword = sh(script: "pwgen ${DB_PASSWORD_LENGTH} 1", returnStdout: true).trim()
         echo "Using temporary database password: ${dbPassword}"
         
         dir('guestbook-devops') {

@@ -1,3 +1,5 @@
+String GITHUB_URL = 'https://github.com/AleksanderGrzybowski'
+
 stage('Clean up') {
     node {
         deleteDir()
@@ -9,11 +11,11 @@ stage('Clone repositories') {
         sh 'mkdir guestbook-frontend guestbook-devops'
 
         dir('guestbook-frontend') {
-            git(url: 'https://github.com/AleksanderGrzybowski/guestbook-frontend.git', poll: true)
+            git(url: "${GITHUB_URL}/guestbook-frontend.git", poll: true)
         }
 
         dir('guestbook-devops') {
-            git(url: 'https://github.com/AleksanderGrzybowski/guestbook-devops.git')
+            git(url: "${GITHUB_URL}/guestbook-devops.git")
             sh "chmod 600 private_key"
         }
     }
@@ -30,7 +32,7 @@ stage('Build frontend') {
     }
 }
 
-stage('Compress frontend') {
+stage('Pack frontend') {
     node {
         dir("guestbook-frontend") {
             sh "mv build www"
@@ -41,7 +43,6 @@ stage('Compress frontend') {
 
 stage('Reprovision server and deploy') {
     node {
-
         dir('guestbook-devops') {
             ansiblePlaybook(
                     playbook: 'site.yml',
@@ -53,7 +54,6 @@ stage('Reprovision server and deploy') {
                     playbook: 'deploy-frontend.yml',
                     inventory: 'hosts',
                     extras: '-e tar_path="../guestbook-frontend/www.tar"'
-
             )
         }
     }
