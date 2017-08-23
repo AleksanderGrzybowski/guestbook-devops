@@ -12,6 +12,12 @@
       unarchive:
         src: '{{ tar_path }}'
         dest: /home/guestbook/
+        
+    - name: Set up backend url for frontend app
+      become_user: guestbook
+      copy:
+        content: "window.__backendUrl = 'http://192.168.33.10:8080/'"
+        dest: /home/guestbook/www/backendUrl.js
       
       
     
