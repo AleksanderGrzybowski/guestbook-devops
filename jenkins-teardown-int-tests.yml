@@ -2,6 +2,14 @@
   become: yes
   tasks:
   
+    - name: Install MySQL and MySQL Python integration for Ansible
+      apt:
+        name: '{{ item }}'
+        state: present
+      with_items:
+        - mysql-server
+        - python-mysqldb
+        
     - name: Delete guestbook test database
       mysql_db:
         name: guestbook
