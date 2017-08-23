@@ -1,17 +1,16 @@
 - hosts: vagrant-production
+  become: yes
   tasks:
     - name: Remove all current assets
-      become: yes
       become_user: guestbook
       file:
         path: /home/guestbook/www
         state: absent
     
     - name: Upload and extract new version
-      become: yes
       become_user: guestbook
       unarchive:
-        src: www.tar
+        src: '{{ tar_path }}'
         dest: /home/guestbook/
       
       

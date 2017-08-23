@@ -4,7 +4,8 @@ pipelineJob('guestbook-frontend') {
             scm {
                 git("https://github.com/AleksanderGrzybowski/guestbook-devops.git")
             }
-            scriptPath("frontend/Jenkinsfile.groovy")
+
+            scriptPath("pipelines/Jenkinsfile-frontend.groovy")
         }
     }
 }
@@ -15,7 +16,8 @@ pipelineJob('guestbook-backend') {
             scm {
                 git("https://github.com/AleksanderGrzybowski/guestbook-devops.git")
             }
-            scriptPath("backend/Jenkinsfile.groovy")
+
+            scriptPath("pipelines/Jenkinsfile-backend.groovy")
         }
     }
 }

@@ -1,0 +1,11 @@
+- hosts: vagrant-production
+  become: yes
+  roles:
+    - user
+    - frontend
+    - backend
+    
+- hosts: vagrant-jenkins
+  become: yes
+  roles:
+    - jenkins

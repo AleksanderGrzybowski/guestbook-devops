@@ -1,0 +1,92 @@
+- name: Add Jenkins APT key
+  apt_key:
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+    state: present
+    
+- name: Add Jenkins APT repository
+  apt_repository:
+    repo: deb https://pkg.jenkins.io/debian-stable binary/
+    state: present
+    
+- name: Install Java 8 and Jenkins
+  apt:
+    name: '{{ item }}'
+    state: present
+    update_cache: yes
+  with_items:
+    - openjdk-8-jdk
+    - jenkins
+    - ansible
+    
+- name: Wait for Jenkins to start
+  pause:
+    seconds: 30
+    
+- name: Put Jenkins config.xml file
+  become_user: jenkins
+  copy:
+    src: config.xml
+    dest: /var/lib/jenkins/
+  
+- name: Skip installation guide
+  lineinfile:
+    dest: /etc/default/jenkins
+    regexp: '^JAVA_ARGS='
+    line: 'JAVA_ARGS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
+    
+- name: Restart Jenkins
+  service:
+    name: jenkins
+    state: restarted
+    
+- name: Wait for Jenkins to restart
+  pause:
+    seconds: 30
+    
+- name: Install required plugins
+  become_user: jenkins
+  command: java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://127.0.0.1:8080/ install-plugin '{{ item }}'
+  with_items:
+    - workflow-aggregator
+    - job-dsl
+    - ansible
+    - git
+    - nodejs
+    
+- name: Set up git configuration
+  become_user: jenkins
+  command: '{{ item }}'  
+  with_items:
+    - git config --global user.email jenkins@example.com
+    - git config --global user.name Jenkins
+
+- name: Set up NodeJS Jenkins tool
+  become_user: jenkins
+  copy:
+    src: nodejs-tool.xml
+    dest: /var/lib/jenkins/jenkins.plugins.nodejs.tools.NodeJSInstallation.xml
+
+- name: Copy seed job definition
+  become_user: jenkins
+  copy:
+    src: '{{ item }}'
+    dest: '/var/lib/jenkins/{{ item }}'
+  with_items:
+    - seed-job.xml
+
+- name: Push seed job definition to Jenkins
+  become_user: jenkins
+  command: curl -s -XPOST 'http://localhost:8080/createItem?name=seed' --data-binary @/var/lib/jenkins/seed-job.xml -H "Content-Type:text/xml"
+
+- name: Restart Jenkins # not sure why needed
+  service:
+    name: jenkins
+    state: restarted
+    
+- name: Wait for Jenkins to restart
+  pause:
+    seconds: 30
+
+- name: Trigger seed job
+  become_user: jenkins
+  command: curl -X POST http://localhost:8080/job/seed/build

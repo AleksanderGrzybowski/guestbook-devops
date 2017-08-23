@@ -1,34 +1,25 @@
 - name: Install Apache
-  become: yes
-  become_user: root
   apt:
     name: apache2
     state: present
     
 - name: Copy site Apache config
-  become: yes
   template:
     src: guestbook.conf
     dest: /etc/apache2/sites-available/guestbook.conf
 
 - name: Disable default Apache config
-  become: yes
   command: a2dissite 000-default.conf
   
 - name: Enable site Apache config
-  become: yes
   command: a2ensite guestbook.conf
     
 - name: Create folder for frontend assets
-  become: yes
-  become_user: guestbook
   file:
     path: /home/guestbook/www
     state: directory
     
 - name: Restart apache
-  become: yes
-  become_user: root
   service:
     name: apache2
     state: restarted

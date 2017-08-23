@@ -1,15 +1,13 @@
 - hosts: vagrant-production
+  become: yes
   tasks:
     - name: Upload .jar
-      become: yes
       become_user: guestbook
       copy:
-        src: app.jar
+        src: '{{ jar_path }}'
         dest: /home/guestbook/app.jar
     
     - name: Restart backend service
-      become: yes
-      become_user: root
       service:
         name: guestbook
         state: restarted

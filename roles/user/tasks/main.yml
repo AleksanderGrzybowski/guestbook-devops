@@ -1,6 +1,4 @@
 - name: Create guestbook user
-  become: yes
-  become_user: root
   user:
     name: guestbook
     state: present

@@ -4,20 +4,6 @@ stage('Clean up') {
     }
 }
 
-stage('Clone devops repository and reprovision server') {
-    node {
-        sh 'mkdir guestbook-devops'
-        dir('guestbook-devops') {
-            git(url: 'https://github.com/AleksanderGrzybowski/guestbook-devops.git')
-        }
-
-        dir('guestbook-devops/production') {
-            sh "chmod 600 private_key"
-            ansiblePlaybook(playbook: 'site.yml', inventory: 'hosts')
-        }
-    }
-}
-
 stage('Clone frontend repository') {
     node {
         git(url: 'https://github.com/AleksanderGrzybowski/guestbook-frontend.git', poll: true)
@@ -42,16 +28,26 @@ stage('Compress frontend') {
     }
 }
 
-stage('Copy and deploy with Ansible') {
+stage('Reprovision server and deploy') {
     node {
-        sh 'mkdir guestbook-devops'
+        sh 'mkdir -p guestbook-devops'
+
         dir('guestbook-devops') {
             git(url: 'https://github.com/AleksanderGrzybowski/guestbook-devops.git')
-        }
-        sh 'cp www.tar guestbook-devops/production/'
-        dir('guestbook-devops/production') {
             sh "chmod 600 private_key"
-            ansiblePlaybook(playbook: 'deploy-frontend.yml', inventory: 'hosts')
+
+            ansiblePlaybook(
+                    playbook: 'site.yml',
+                    inventory: 'hosts',
+                    extras: '--limit vagrant-production'
+            )
+            
+            ansiblePlaybook(
+                    playbook: 'deploy-frontend.yml',
+                    inventory: 'hosts',
+                    extras: '-e tar_path="../www.tar"'
+
+            )
         }
     }
 }
