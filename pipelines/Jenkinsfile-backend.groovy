@@ -19,17 +19,18 @@ stage('Clone repositories') {
     }
 }
 
+String dbPassword = null
+
 stage('Resetup database for integration tests') {
     node {
+        dbPassword = sh(script: 'pwgen 10 1', returnStdout: true).trim()
+        echo "Using temporary database password: ${dbPassword}"
+        
         dir('guestbook-devops') {
             ansiblePlaybook(
-                    playbook: 'jenkins-teardown-int-tests.yml',
-                    inventory: 'hosts'
-            )
-            
-            ansiblePlaybook(
                     playbook: 'jenkins-setup-int-tests.yml',
-                    inventory: 'hosts'
+                    inventory: 'hosts',
+                    extras: "-e db_password=${dbPassword}"
             )
         }
     }
@@ -38,7 +39,9 @@ stage('Resetup database for integration tests') {
 stage('Run tests') {
     node {
         dir('guestbook-backend') {
-            sh "./gradlew test -i"
+            withEnv(['SPRING_DATASOURCE_USERNAME=guestbook', "SPRING_DATASOURCE_PASSWORD=${dbPassword}"]) {
+                sh './gradlew test -i'
+            }
         }
     }
 }

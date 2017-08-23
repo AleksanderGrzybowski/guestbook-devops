@@ -9,15 +9,20 @@
       with_items:
         - mysql-server
         - python-mysqldb
-    
+        
+    - name: Drop guestbook test database
+      mysql_db:
+        name: guestbook
+        state: absent
+        
     - name: Add guestbook-test mysql user
       mysql_user:
         name: guestbook
-        password: guestbook
+        password: '{{ db_password }}'
         priv: '*.*:ALL'
         state: present
         
-    - name: Add guestbook test database
+    - name: Recreate guestbook test database
       mysql_db:
         name: guestbook-integrationtest
         state: present

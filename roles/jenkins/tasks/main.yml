@@ -8,7 +8,7 @@
     repo: deb https://pkg.jenkins.io/debian-stable binary/
     state: present
     
-- name: Install Java 8 and Jenkins
+- name: Install Java 8, Jenkins and other packages
   apt:
     name: '{{ item }}'
     state: present
@@ -17,6 +17,7 @@
     - openjdk-8-jdk
     - jenkins
     - ansible
+    - pwgen
     
 - name: Wait for Jenkins to start
   pause:
