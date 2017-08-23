@@ -1,0 +1,16 @@
+- hosts: vagrant-jenkins
+  become: yes
+  tasks:
+  
+    - name: Delete guestbook test database
+      mysql_db:
+        name: guestbook
+        state: absent
+        
+    - name: Delete guestbook-test mysql user
+      mysql_user:
+        name: guestbook
+        state: absent
+        
+        
+    

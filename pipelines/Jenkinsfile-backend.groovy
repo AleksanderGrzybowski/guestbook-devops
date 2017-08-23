@@ -10,9 +10,48 @@ stage('Clone backend repository') {
     }
 }
 
+String dbPassword;
+
+stage('Set up database for integration tests') {
+    node {
+        sh 'mkdir -p guestbook-devops'
+        dbPassword = sh(script: "pwgen 10 1", returnStdout: true)
+
+        dir('guestbook-devops') {
+            git(url: 'https://github.com/AleksanderGrzybowski/guestbook-devops.git')
+            sh "chmod 600 private_key"
+
+            ansiblePlaybook(
+                    playbook: 'jenkins-setup-int-tests.yml',
+                    inventory: 'hosts',
+                    extras: "-e db_password=${dbPassword}"
+            )
+        }
+    }
+}
+
 stage('Run tests') {
     node {
-        sh './gradlew clean test'
+        echo ("Using dbpassword " + dbPassword)
+        withEnv(["SPRING_DATASOURCE_PASSWORD=${dbPassword}" ]) {
+            sh "./gradlew test -i"
+        }
+    }
+}
+
+stage('Tear down database for integration tests') {
+    node {
+        sh 'mkdir -p guestbook-devops'
+
+        dir('guestbook-devops') {
+            git(url: 'https://github.com/AleksanderGrzybowski/guestbook-devops.git')
+            sh "chmod 600 private_key"
+
+            ansiblePlaybook(
+                    playbook: 'jenkins-teardown-int-tests.yml',
+                    inventory: 'hosts'
+            )
+        }
     }
 }
 

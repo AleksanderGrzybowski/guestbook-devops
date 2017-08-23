@@ -1,0 +1,26 @@
+- hosts: vagrant-jenkins
+  become: yes
+  tasks:
+  
+    - name: Install MySQL and MySQL Python integration for Ansible
+      apt:
+        name: '{{ item }}'
+        state: present
+      with_items:
+        - mysql-server
+        - python-mysqldb
+    
+    - name: Add guestbook-test mysql user
+      mysql_user:
+        name: guestbook
+        password: guestbook
+        priv: '*.*:ALL'
+        state: present
+        
+    - name: Add guestbook test database
+      mysql_db:
+        name: guestbook-integrationtest
+        state: present
+        
+        
+    
